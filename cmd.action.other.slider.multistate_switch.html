@@ -1,0 +1,170 @@
+<div class="cmd cmd-widget reportModeHidden" data-type="action" data-subtype="slider" data-template="default" data-cmd_id="#id#" data-cmd_uid="#uid#" data-version="#version#" data-eqLogic_id="#eqLogic_id#">
+  <!-- ################ bouton_mode1 ################ 
+    Widget name : cmd.action.other.slider.multistate_switch
+    Author : Phpvarious
+    Version : 09/04/2026 06h45
+    Doc : https://phpvarious.github.io/documentation/widget/fr_FR/action/slider/cmd.action.slider.multistate_switch
+  -->
+  <template>
+    <div>labels : label des boutons [Défaut : ON|AUTO|OFF]</div>
+    <div>backgrounds : couleur de fonds du glider [Défaut : green|blue|red]</div>
+    <div>colors : couleur du label [Défaut : white|white|white]</div>
+    <div>vertical : active le slider vertical [Défaut : 0 = horizontal | 1 = vertical]</div>
+    <div>minWidth : Taille minimale de chaque boutons [Défaut : 100]</div>
+    <div>time : duration|date (Affiche durée ou date de la valeur)</div>
+  </template>
+  <div class="content">
+    <div class="group-#uid#"></div>
+  </div>
+  <div class="timeCmd label label-default #value_history#" data-type="info" data-cmd_id="#value_id#"></div>
+  
+  <script>
+    var group = document.querySelector('.group-#uid#')
+    var separators_#uid# = '|'
+    var label_#uid# = 'OFF|AUTO|ON'
+    if ('#labels#' != '#'+'labels#') label_#uid# = String('#labels#').replace(/^\|+|\|+$/g, '')
+    var labelArray_#uid# = label_#uid#.split(new RegExp("[" + separators_#uid# + "]"))
+    var nbInput_#uid# = labelArray_#uid#.length
+    document.documentElement.style.setProperty('--nb-element-#uid#', nbInput_#uid#)
+    var background_#uid# = 'red|blue|green'//
+    if ('#backgrounds#' != '#'+'backgrounds#') background_#uid# = String('#backgrounds#').replace(/^\|+|\|+$/g, '')
+    var backgroundArray_#uid# = background_#uid#.split(new RegExp("[" + separators_#uid# + "]"))
+    var color_#uid# = 'white|white|white'//
+    if ('#colors#' != '#'+'colors#') color_#uid# = String('#colors#').replace(/^\|+|\|+$/g, '')
+    var colorArray_#uid# = color_#uid#.split(new RegExp("[" + separators_#uid# + "]"))
+    var vertical_#uid# = ('#vertical#' == '1') ? '1' : '0'
+    if (vertical_#uid# == '1') group.addClass('vertical')
+    if (is_numeric('#minWidth#')) document.documentElement.style.setProperty('--min-width-#uid#', '#minWidth#px')
+    
+    if (nbInput_#uid# > 0) {
+      var style_#uid# = '<style class="style_#uid#" id="style_#uid#">'
+      labelArray_#uid#.map(function(label, index) {
+        let radioInput;
+        let labelInput;
+        // input //
+        radioInput = document.createElement('input')
+        radioInput.setAttribute('type', 'radio')
+        radioInput.setAttribute('name', 'input-#uid#')
+        radioInput.setAttribute('id', 'input_' + index + '_#uid#')
+        radioInput.setAttribute('data-value', index)
+        group?.appendChild(radioInput)
+        // label //
+        labelInput = document.createElement('label')
+        labelInput.setAttribute('for', 'input_' + index + '_#uid#')
+        labelInput.innerHTML = label.trim()
+        group?.appendChild(labelInput)
+        // style //
+        style_#uid# += '#input_' + index + '_#uid#:checked ~ .glider-#uid# {transform: ' //.cmd[data-cmd_uid="#uid#"] 
+        if (vertical_#uid# == '1') style_#uid# += 'translateY'
+        else style_#uid# += 'translateX'
+        style_#uid# += '(' + (index * 100) + '%);'
+        if (isset(backgroundArray_#uid#[index]) && backgroundArray_#uid#[index] != '' && backgroundArray_#uid#[index] != 'null') {
+          style_#uid# += 'background: ' + backgroundArray_#uid#[index].trim() + ';'
+        }
+        style_#uid# += ' }\n'
+        if (isset(colorArray_#uid#[index]) && colorArray_#uid#[index] != '' && colorArray_#uid#[index] != 'null') {
+           style_#uid# += '.cmd[data-cmd_uid="#uid#"] #input_' + index + '_#uid#:checked ~ label[for="input_' + index + '_#uid#"] {color: ' + colorArray_#uid#[index].trim() + '}\n'
+        }
+      })
+      style_#uid# += '</style>'
+      document.querySelector('.cmd[data-cmd_uid="#uid#"]')?.insertAdjacentHTML('beforeend', style_#uid#)
+      
+      let glider = document.createElement('div');
+      glider.classList.add("glider-#uid#")
+      group?.appendChild(glider)
+    }
+    
+    jeedom.cmd.addUpdateFunction('#id#',function(_options) {
+      if (is_object(cmd = document.querySelector('.cmd[data-cmd_uid="#uid#"]'))) {
+        if ('#time#' == 'duration' || '#time#' == 'date') {
+          jeedom.cmd.displayDuration(_options.valueDate, cmd.querySelector('.timeCmd'), '#time#')
+        }
+        if (is_object(glass = cmd.querySelector('#input_' + _options.value + '_#uid#'))) {
+          cmd.querySelector('.glider-#uid#')?.seen()
+          glass.checked = true
+        } else {
+          cmd.querySelectorAll('input').forEach(_input => {
+            _input.checked = false
+          })
+          cmd.querySelector('.glider-#uid#')?.unseen()
+        }
+      }
+    })
+    
+    jeedom.cmd.refreshValue([{ cmd_id: '#id#', display_value: '#state#', value: '#state#',valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#'}])
+    
+    document.querySelector('.group-#uid#')?.addEventListener('click', function(event) {
+      var _target = null
+      if (_target = event.target.closest('input')) {
+        var value = _target.getAttribute('data-value')
+        if (value !== undefined) {
+          jeedom.cmd.execute({ id: '#id#', value: { slider: value } })
+        }
+        return;
+      }
+    })
+  </script>
+  
+  <style id="style_#uid#">
+    :root {
+      --nb-element-#uid#: 0;
+      --background-#uid#: var(--btnEq-default-color);
+      --min-width-#uid# : 100px;
+      --font-size-#uid# : 14px;
+    }
+    .group-#uid# {
+      display: flex;
+      position: relative;
+      background: var(--btnEq-default-color);
+      border-radius: 10px;
+      box-shadow:
+        inset 1px 1px 4px rgba(255, 255, 255, 0.2),
+        inset -1px -1px 6px rgba(0, 0, 0, 0.3),
+        0 4px 12px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+      width: fit-content;
+    }
+    .group-#uid#.vertical {
+      flex-direction: column;
+    }
+    .group-#uid# input {
+      display: none;
+    }
+    .group-#uid# label {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: var(--min-width-#uid#);
+      font-size: var(--font-size-#uid#);
+      line-height: var(--font-size-#uid#);
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      position: relative;
+      z-index: 2;
+      transition: color 0.3s ease-in-out;
+      margin-bottom: 0px;
+      /* white-space: nowrap; */
+    }
+    .glider-#uid# {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: calc(100% / var(--nb-element-#uid#));
+      border-radius: 10px;
+      z-index: 1;
+      background: var(--background-#uid#);
+      transition:
+        transform 0.5s cubic-bezier(0.37, 1.95, 0.66, 0.56),
+        background 0.4s ease-in-out,
+        box-shadow 0.4s ease-in-out;
+      border: 1px solid;
+    }
+    .vertical .glider-#uid# {
+      height: calc(100% / var(--nb-element-#uid#));
+      width: 100%;
+    }
+  </style>
+</div>
